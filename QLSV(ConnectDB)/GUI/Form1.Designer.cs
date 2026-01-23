@@ -70,6 +70,7 @@ namespace QLSV_ConnectDB.GUI
             this.label18 = new System.Windows.Forms.Label();
             this.label19 = new System.Windows.Forms.Label();
             this.label20 = new System.Windows.Forms.Label();
+            this.btnExportExcel = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvSinhVien)).BeginInit();
@@ -121,7 +122,7 @@ namespace QLSV_ConnectDB.GUI
             this.groupBox1.Controls.Add(this.txtMaSV);
             this.groupBox1.Location = new System.Drawing.Point(0, 51);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(305, 265);
+            this.groupBox1.Size = new System.Drawing.Size(305, 283);
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Thông tin";
@@ -340,7 +341,7 @@ namespace QLSV_ConnectDB.GUI
             this.colDiachi,
             this.colKhoa,
             this.colMalop});
-            this.dgvSinhVien.Location = new System.Drawing.Point(305, 81);
+            this.dgvSinhVien.Location = new System.Drawing.Point(305, 100);
             this.dgvSinhVien.Name = "dgvSinhVien";
             this.dgvSinhVien.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvSinhVien.Size = new System.Drawing.Size(772, 233);
@@ -386,7 +387,7 @@ namespace QLSV_ConnectDB.GUI
             // 
             // btnThem
             // 
-            this.btnThem.Location = new System.Drawing.Point(10, 320);
+            this.btnThem.Location = new System.Drawing.Point(2, 340);
             this.btnThem.Name = "btnThem";
             this.btnThem.Size = new System.Drawing.Size(75, 30);
             this.btnThem.TabIndex = 6;
@@ -395,7 +396,7 @@ namespace QLSV_ConnectDB.GUI
             // 
             // btnSua
             // 
-            this.btnSua.Location = new System.Drawing.Point(90, 320);
+            this.btnSua.Location = new System.Drawing.Point(82, 340);
             this.btnSua.Name = "btnSua";
             this.btnSua.Size = new System.Drawing.Size(75, 30);
             this.btnSua.TabIndex = 7;
@@ -404,7 +405,7 @@ namespace QLSV_ConnectDB.GUI
             // 
             // btnXoa
             // 
-            this.btnXoa.Location = new System.Drawing.Point(170, 320);
+            this.btnXoa.Location = new System.Drawing.Point(162, 340);
             this.btnXoa.Name = "btnXoa";
             this.btnXoa.Size = new System.Drawing.Size(75, 30);
             this.btnXoa.TabIndex = 8;
@@ -413,7 +414,7 @@ namespace QLSV_ConnectDB.GUI
             // 
             // btnLamMoi
             // 
-            this.btnLamMoi.Location = new System.Drawing.Point(250, 320);
+            this.btnLamMoi.Location = new System.Drawing.Point(242, 340);
             this.btnLamMoi.Name = "btnLamMoi";
             this.btnLamMoi.Size = new System.Drawing.Size(75, 30);
             this.btnLamMoi.TabIndex = 5;
@@ -422,14 +423,14 @@ namespace QLSV_ConnectDB.GUI
             // 
             // txtTimKiem
             // 
-            this.txtTimKiem.Location = new System.Drawing.Point(311, 59);
+            this.txtTimKiem.Location = new System.Drawing.Point(311, 69);
             this.txtTimKiem.Name = "txtTimKiem";
-            this.txtTimKiem.Size = new System.Drawing.Size(150, 20);
+            this.txtTimKiem.Size = new System.Drawing.Size(167, 20);
             this.txtTimKiem.TabIndex = 4;
             // 
             // btnTimKiem
             // 
-            this.btnTimKiem.Location = new System.Drawing.Point(467, 56);
+            this.btnTimKiem.Location = new System.Drawing.Point(484, 69);
             this.btnTimKiem.Name = "btnTimKiem";
             this.btnTimKiem.Size = new System.Drawing.Size(33, 24);
             this.btnTimKiem.TabIndex = 3;
@@ -535,11 +536,23 @@ namespace QLSV_ConnectDB.GUI
             this.label20.TabIndex = 20;
             this.label20.Text = "Nữ";
             // 
+            // btnExportExcel
+            // 
+            this.btnExportExcel.BackColor = System.Drawing.Color.IndianRed;
+            this.btnExportExcel.Location = new System.Drawing.Point(971, 60);
+            this.btnExportExcel.Name = "btnExportExcel";
+            this.btnExportExcel.Size = new System.Drawing.Size(94, 34);
+            this.btnExportExcel.TabIndex = 9;
+            this.btnExportExcel.Text = "Xuất file Excel";
+            this.btnExportExcel.UseVisualStyleBackColor = false;
+            this.btnExportExcel.Click += new System.EventHandler(this.btnExportExcel_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1077, 361);
+            this.ClientSize = new System.Drawing.Size(1077, 396);
+            this.Controls.Add(this.btnExportExcel);
             this.Controls.Add(this.dgvSinhVien);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.panel1);
@@ -613,5 +626,6 @@ namespace QLSV_ConnectDB.GUI
         private Label label11;
         private Label label20;
         private Label label19;
+        private Button btnExportExcel;
     }
 }

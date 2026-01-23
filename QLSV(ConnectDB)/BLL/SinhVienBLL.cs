@@ -55,7 +55,7 @@ namespace QLSV_ConnectDB.BLL
 
             return "OK";
             }
-
+        //
         public void DeleteSV(string ma) => dal.Xoa(ma);
     }
 }

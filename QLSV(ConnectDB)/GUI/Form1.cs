@@ -6,6 +6,8 @@ using System.Windows.Forms;
 using QLSV_ConnectDB.BLL;
 using QLSV_ConnectDB.DTO;
 
+using Excel = Microsoft.Office.Interop.Excel;
+
 namespace QLSV_ConnectDB.GUI
 {
     public partial class Form1 : Form
@@ -188,6 +190,69 @@ namespace QLSV_ConnectDB.GUI
             }
         }
 
-        
+        private void btnExportExcel_Click(object sender, EventArgs e)
+        {
+            if (dgvSinhVien.Rows.Count > 0)
+            {
+                Excel.Application xcelApp = new Excel.Application();
+                Excel.Workbook workbook = xcelApp.Workbooks.Add(Type.Missing);
+                Excel._Worksheet worksheet = workbook.ActiveSheet;
+
+                int colCount = dgvSinhVien.Columns.Count;
+                Excel.Range titleRange = worksheet.get_Range("A1", GetColumnName(colCount) + "1");
+                titleRange.Merge();
+                titleRange.Value2 = "DANH SÁCH SINH VIÊN";
+                titleRange.Font.Size = 16;
+                titleRange.Font.Bold = true;
+                titleRange.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+
+                // Tiêu đề cột (Dòng 3)
+                int headerRow = 3;
+                for (int i = 1; i <= colCount; i++)
+                {
+                    worksheet.Cells[headerRow, i] = dgvSinhVien.Columns[i - 1].HeaderText;
+                    Excel.Range headerRange = worksheet.Cells[headerRow, i];
+                    headerRange.Font.Bold = true;
+                    headerRange.Interior.Color = ColorTranslator.ToOle(Color.LightGray);
+                    headerRange.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                }
+
+                // Chèn dữ liệu (Bắt đầu từ dòng 4)
+                for (int i = 0; i < dgvSinhVien.Rows.Count; i++)
+                {
+                    for (int j = 0; j < colCount; j++)
+                    {
+                        worksheet.Cells[i + headerRow + 1, j + 1] = dgvSinhVien.Rows[i].Cells[j].Value?.ToString();
+                    }
+                }
+
+                // Xác định vùng dữ liệu từ tiêu đề cột đến dòng cuối cùng
+                int lastRow = headerRow + dgvSinhVien.Rows.Count;
+                Excel.Range tableRange = worksheet.get_Range("A" + headerRow, GetColumnName(colCount) + lastRow);
+
+                tableRange.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
+                tableRange.Borders.Weight = Excel.XlBorderWeight.xlThin;
+
+                xcelApp.Columns.AutoFit();
+                xcelApp.Visible = true;
+            }
+        }
+        //
+        // Hàm phụ để lấy tên cột Excel (A, B, C...) dựa trên số lượng cotss
+        private string GetColumnName(int columnNumber)
+        {
+            int dividend = columnNumber;
+            string columnName = String.Empty;
+            int modulo;
+
+            while (dividend > 0)
+            {
+                modulo = (dividend - 1) % 26;
+                columnName = Convert.ToChar(65 + modulo).ToString() + columnName;
+                dividend = (int)((dividend - modulo) / 26);
+            }
+            return columnName;
+        }
     }
 }
+
