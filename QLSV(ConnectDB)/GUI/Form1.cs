@@ -217,12 +217,34 @@ namespace QLSV_ConnectDB.GUI
                     headerRange.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
                 }
 
-                // Chèn dữ liệu (Bắt đầu từ dòng 4)
+                // Chèn dữ liệu (dòng 4)
                 for (int i = 0; i < dgvSinhVien.Rows.Count; i++)
                 {
                     for (int j = 0; j < colCount; j++)
                     {
-                        worksheet.Cells[i + headerRow + 1, j + 1] = dgvSinhVien.Rows[i].Cells[j].Value?.ToString();
+                        Excel.Range cell = worksheet.Cells[i + headerRow + 1, j + 1];
+                        object value = dgvSinhVien.Rows[i].Cells[j].Value;
+                        string header = dgvSinhVien.Columns[j].HeaderText.ToLower();
+
+                        if (value != null)
+                        {
+                            if (header.Contains("ngày sinh") || header.Contains("ngày nhập học") || header.Contains("ngaysinh"))
+                            {
+                                if (DateTime.TryParse(value.ToString(), out DateTime dateValue))
+                                {
+                                    cell.Value2 = dateValue; 
+                                    cell.NumberFormat = "dd/MM/yyyy"; 
+                                }
+                                else
+                                {
+                                    cell.Value2 = value.ToString();
+                                }
+                            }
+                            else
+                            {
+                                cell.Value2 = value.ToString();
+                            }
+                        }
                     }
                 }
 
@@ -238,7 +260,7 @@ namespace QLSV_ConnectDB.GUI
             }
         }
         //
-        // Hàm phụ để lấy tên cột Excel (A, B, C...) dựa trên số lượng cotss
+        // Hàm lấy tên cột Excel (A, ....) dựa trên số lượng cotss
         private string GetColumnName(int columnNumber)
         {
             int dividend = columnNumber;
