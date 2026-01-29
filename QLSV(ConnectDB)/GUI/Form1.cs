@@ -1,0 +1,371 @@
+﻿using QLSV_ConnectDB.BLL;
+using QLSV_ConnectDB.DTO;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Drawing;
+using System.Linq; 
+using System.Windows.Forms;
+using Excel = Microsoft.Office.Interop.Excel;
+
+namespace QLSV_ConnectDB.GUI
+{
+    public partial class Form1 : Form
+    {
+        List<SinhVien> dsGoc = new List<SinhVien>();
+        SinhVienBLL bll = new SinhVienBLL();
+
+        public Form1()
+        {
+            InitializeComponent();
+            LoadData();
+
+            // Định dạng ngày tháng
+            dtpNgaySinh.Format = DateTimePickerFormat.Custom;
+            dtpNgaySinh.CustomFormat = "dd/MM/yyyy";
+
+            dtpNgayNhapHoc.Format = DateTimePickerFormat.Custom;
+            dtpNgayNhapHoc.CustomFormat = "dd/MM/yyyy";
+
+            dtFromYear.Format = DateTimePickerFormat.Custom;
+            dtFromYear.CustomFormat = "dd/MM/yyyy";
+
+            dtToYear.Format = DateTimePickerFormat.Custom;
+            dtToYear.CustomFormat = "dd/MM/yyyy";
+
+            dtFromYear.ShowCheckBox = true;
+            dtToYear.ShowCheckBox = true;
+
+            dtFromYear.Checked = false;
+            dtToYear.Checked = false;
+
+        }
+
+        void LoadData()
+        {
+            try
+            {
+                dgvSinhVien.DataSource = null;
+                dgvSinhVien.AutoGenerateColumns = false;
+                dgvSinhVien.Columns.Clear();
+
+                dgvSinhVien.Columns.Add(new DataGridViewTextBoxColumn { Name = "STT", HeaderText = "STT", Width = 50 });
+                dgvSinhVien.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "MaSV", HeaderText = "Mã SV", Name = "MaSV" });
+                dgvSinhVien.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "HoTen", HeaderText = "Họ tên", Name = "HoTen" });
+                dgvSinhVien.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "NgaySinh", HeaderText = "Ngày sinh" });
+                dgvSinhVien.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "GioiTinh", HeaderText = "Giới tính" });
+                dgvSinhVien.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "QueQuan", HeaderText = "Quê quán" });
+                dgvSinhVien.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "DiaChi", HeaderText = "Địa chỉ" });
+                dgvSinhVien.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "NgayNhapHoc", HeaderText = "Ngày nhập học" });
+                dgvSinhVien.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Khoa", HeaderText = "Khoa" });
+                dgvSinhVien.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "MaLop", HeaderText = "Mã lớp" });
+
+                dsGoc = bll.GetDS();
+                dgvSinhVien.DataSource = dsGoc;
+            }
+            catch (Exception ex) { MessageBox.Show("Lỗi tải dữ liệu: " + ex.Message); }
+        }
+
+        private SinhVien GetEntity()
+        {
+            return new SinhVien
+            {
+                MaSV = txtMaSV.Text.Trim(),
+                HoTen = txtHoTen.Text.Trim(),
+                NgaySinh = dtpNgaySinh.Value,
+                GioiTinh = rbNam.Checked ? "Nam" : (rbNu.Checked ? "Nữ" : null),
+                QueQuan = cboQueQuan.SelectedItem?.ToString() ?? cboQueQuan.Text,
+                DiaChi = txtDiaChi.Text.Trim(),
+                NgayNhapHoc = dtpNgayNhapHoc.Value,
+                Khoa = cboKhoa.SelectedItem?.ToString() ?? cboKhoa.Text,
+                MaLop = txtMaLop.Text.Trim()
+            };
+        }
+
+        private void btnThem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string res = bll.CheckAndSave(GetEntity(), false);
+                if (res == "OK")
+                {
+                    MessageBox.Show("Thêm thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    LoadData();
+                    btnLamMoi.PerformClick();
+                }
+                else MessageBox.Show(res, "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            catch (Exception ex) { MessageBox.Show("Lỗi: " + ex.Message); }
+        }
+
+        private void btnSua_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string res = bll.CheckAndSave(GetEntity(), true);
+                if (res == "OK")
+                {
+                    MessageBox.Show("Cập nhật thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    LoadData();
+                }
+                else MessageBox.Show(res, "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            catch (Exception ex) { MessageBox.Show("Lỗi: " + ex.Message); }
+        }
+
+        private void btnXoa_Click(object sender, EventArgs e)
+        {
+            string ma = txtMaSV.Text.Trim();
+            if (string.IsNullOrEmpty(ma))
+            {
+                MessageBox.Show("Vui lòng chọn sinh viên cần xóa!");
+                return;
+            }
+            if (MessageBox.Show($"Xác nhận xóa SV mã: {ma}?", "Hỏi", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                bll.DeleteSV(ma);
+                LoadData();
+                btnLamMoi.PerformClick();
+            }
+        }
+
+        private void dgvSinhVien_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0) return;
+            var r = dgvSinhVien.Rows[e.RowIndex];
+
+            txtMaSV.Text = r.Cells["MaSV"].Value?.ToString() ?? "";
+            txtHoTen.Text = r.Cells["HoTen"].Value?.ToString() ?? "";
+
+            if (r.Cells[3].Value != null && DateTime.TryParse(r.Cells[3].Value.ToString(), out DateTime ns))
+                dtpNgaySinh.Value = ns;
+
+            string gt = r.Cells[4].Value?.ToString();
+            rbNam.Checked = (gt == "Nam");
+            rbNu.Checked = (gt == "Nữ");
+
+            cboQueQuan.Text = r.Cells[5].Value?.ToString() ?? "";
+            txtDiaChi.Text = r.Cells[6].Value?.ToString() ?? "";
+
+            if (r.Cells[7].Value != null && DateTime.TryParse(r.Cells[7].Value.ToString(), out DateTime nh))
+                dtpNgayNhapHoc.Value = nh;
+
+            string khoa = r.Cells[8].Value?.ToString() ?? "";
+            cboKhoa.Text = khoa;
+
+            txtMaLop.Text = r.Cells[9].Value?.ToString() ?? "";
+            txtMaSV.Enabled = false;
+        }
+
+        private void btnLamMoi_Click(object sender, EventArgs e)
+        {
+            txtMaSV.Enabled = true;
+            txtMaSV.Clear();
+            txtHoTen.Clear();
+            txtDiaChi.Clear();
+            txtMaLop.Clear();
+            cboQueQuan.SelectedIndex = -1;
+            cboKhoa.SelectedIndex = -1;
+            dtpNgaySinh.Value = DateTime.Now;
+            dtpNgayNhapHoc.Value = DateTime.Now;
+            txtMaSV.Focus();
+        }
+
+        private void dgvSinhVien_RowPostPaint(object sender, DataGridViewRowPostPaintEventArgs e)
+        {
+            dgvSinhVien.Rows[e.RowIndex].Cells["STT"].Value = (e.RowIndex + 1).ToString();
+        }
+
+        private void btnTimKiem_Click(object sender, EventArgs e)
+        {
+            string keyword = txtTimKiem.Text.Trim().ToLower();
+
+            if (string.IsNullOrEmpty(keyword))
+            {
+                dgvSinhVien.DataSource = dsGoc;
+                return;
+            }
+
+            var ketQua = dsGoc.Where(sv =>
+                (sv.MaSV != null && sv.MaSV.ToLower().Contains(keyword)) ||
+                (sv.HoTen != null && sv.HoTen.ToLower().Contains(keyword))
+            ).ToList();
+
+            if (ketQua.Count > 0)
+            {
+                dgvSinhVien.DataSource = null;
+                dgvSinhVien.DataSource = ketQua;
+            }
+            else
+            {
+                MessageBox.Show($"Không tìm thấy: '{keyword}'", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                dgvSinhVien.DataSource = dsGoc;
+            }
+        }
+
+        private void btnExportExcel_Click(object sender, EventArgs e)
+        {
+            if (dgvSinhVien.Rows.Count > 0)
+            {
+                Excel.Application xcelApp = new Excel.Application();
+                Excel.Workbook workbook = xcelApp.Workbooks.Add(Type.Missing);
+                Excel._Worksheet worksheet = workbook.ActiveSheet;
+
+                int colCount = dgvSinhVien.Columns.Count;
+                Excel.Range titleRange = worksheet.get_Range("A1", GetColumnName(colCount) + "1");
+                titleRange.Merge();
+                titleRange.Value2 = "DANH SÁCH SINH VIÊN";
+                titleRange.Font.Size = 16;
+                titleRange.Font.Bold = true;
+                titleRange.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+
+                // Tiêu đề cột (Dòng 3)
+                int headerRow = 3;
+                for (int i = 1; i <= colCount; i++)
+                {
+                    worksheet.Cells[headerRow, i] = dgvSinhVien.Columns[i - 1].HeaderText;
+                    Excel.Range headerRange = worksheet.Cells[headerRow, i];
+                    headerRange.Font.Bold = true;
+                    headerRange.Interior.Color = ColorTranslator.ToOle(Color.LightGray);
+                    headerRange.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                }
+
+                // Chèn dữ liệu (dòng 4)
+                for (int i = 0; i < dgvSinhVien.Rows.Count; i++)
+                {
+                    for (int j = 0; j < colCount; j++)
+                    {
+                        Excel.Range cell = worksheet.Cells[i + headerRow + 1, j + 1];
+                        object value = dgvSinhVien.Rows[i].Cells[j].Value;
+                        string header = dgvSinhVien.Columns[j].HeaderText.ToLower();
+
+                        if (value != null)
+                        {
+                            if (header.Contains("ngày sinh") || header.Contains("ngày nhập học") || header.Contains("ngaysinh"))
+                            {
+                                if (DateTime.TryParse(value.ToString(), out DateTime dateValue))
+                                {
+                                    cell.Value2 = dateValue;
+                                    cell.NumberFormat = "dd/MM/yyyy";
+                                }
+                                else
+                                {
+                                    cell.Value2 = value.ToString();
+                                }
+                            }
+                            else
+                            {
+                                cell.Value2 = value.ToString();
+                            }
+                        }
+                    }
+                }
+
+                // Xác định vùng dữ liệu từ tiêu đề cột đến dòng cuối cùng
+                int lastRow = headerRow + dgvSinhVien.Rows.Count;
+                Excel.Range tableRange = worksheet.get_Range("A" + headerRow, GetColumnName(colCount) + lastRow);
+
+                tableRange.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
+                tableRange.Borders.Weight = Excel.XlBorderWeight.xlThin;
+
+                xcelApp.Columns.AutoFit();
+                xcelApp.Visible = true;
+            }
+        }
+        //
+        // Hàm lấy tên cột Excel (A, ....) dựa trên số lượng cotss
+        private string GetColumnName(int columnNumber)
+        {
+            int dividend = columnNumber;
+            string columnName = String.Empty;
+            int modulo;
+
+            while (dividend > 0)
+            {
+                modulo = (dividend - 1) % 26;
+                columnName = Convert.ToChar(65 + modulo).ToString() + columnName;
+                dividend = (int)((dividend - modulo) / 26);
+            }
+            return columnName;
+        }
+
+        private void btnXoaNhieu_Click(object sender, EventArgs e)
+        {
+            if (dgvSinhVien.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Vui lòng chọn sinh viên cần xóa");
+                return;
+            }
+
+            if (MessageBox.Show(
+                "Bạn có chắc chắn muốn xóa các sinh viên đã chọn?",
+                "Xác nhận",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning) == DialogResult.No)
+                return;
+
+            foreach (DataGridViewRow row in dgvSinhVien.SelectedRows)
+            {
+                string maSV = row.Cells["MaSV"].Value.ToString();
+                bll.DeleteSV(maSV);
+            }
+
+            LoadData();
+        }
+
+
+        private void btnLoc_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string khoa = cboKhoaFilter.Text.Trim();
+                string gioiTinh = cboGioiTinhFilter.Text.Trim();
+
+                DateTime? fromDate = dtFromYear.Checked ? dtFromYear.Value : (DateTime?)null;
+                DateTime? toDate = dtToYear.Checked ? dtToYear.Value : (DateTime?)null;
+
+                var ketQua = bll.LocSinhVien(
+                    string.IsNullOrWhiteSpace(khoa) ? null : khoa,
+                    string.IsNullOrWhiteSpace(gioiTinh) ? null : gioiTinh,
+                    fromDate,
+                    toDate
+                );
+
+                dgvSinhVien.DataSource = null;
+                dgvSinhVien.DataSource = ketQua;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    ex.Message,
+                    "Thông báo",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information
+                );
+
+                dgvSinhVien.DataSource = dsGoc;
+            }
+        }
+
+
+        private void btnSapXep_Click(object sender, EventArgs e)
+        {
+            string sort = cboSapXep.Text;
+            List<SinhVien> ds;
+
+            if (sort == "Họ tên")
+                ds = dsGoc.OrderBy(sv => sv.HoTen).ToList();
+            else if (sort == "Ngày sinh")
+                ds = dsGoc.OrderBy(sv => sv.NgaySinh).ToList();
+            else if (sort == "Ngày nhập học")
+                ds = dsGoc.OrderByDescending(sv => sv.NgayNhapHoc).ToList();
+            else
+                ds = dsGoc;
+
+            dgvSinhVien.DataSource = ds;
+        }
+
+
+    }
+
+}
