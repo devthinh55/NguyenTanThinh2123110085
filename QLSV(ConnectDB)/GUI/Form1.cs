@@ -289,6 +289,83 @@ namespace QLSV_ConnectDB.GUI
             return columnName;
         }
 
+        private void btnXoaNhieu_Click(object sender, EventArgs e)
+        {
+            if (dgvSinhVien.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Vui lòng chọn sinh viên cần xóa");
+                return;
+            }
 
+            if (MessageBox.Show(
+                "Bạn có chắc chắn muốn xóa các sinh viên đã chọn?",
+                "Xác nhận",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning) == DialogResult.No)
+                return;
+
+            foreach (DataGridViewRow row in dgvSinhVien.SelectedRows)
+            {
+                string maSV = row.Cells["MaSV"].Value.ToString();
+                bll.DeleteSV(maSV);
+            }
+
+            LoadData();
+        }
+
+
+        private void btnLoc_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string khoa = cboKhoaFilter.Text.Trim();
+                string gioiTinh = cboGioiTinhFilter.Text.Trim();
+
+                DateTime? fromDate = dtFromYear.Checked ? dtFromYear.Value : (DateTime?)null;
+                DateTime? toDate = dtToYear.Checked ? dtToYear.Value : (DateTime?)null;
+
+                var ketQua = bll.LocSinhVien(
+                    string.IsNullOrWhiteSpace(khoa) ? null : khoa,
+                    string.IsNullOrWhiteSpace(gioiTinh) ? null : gioiTinh,
+                    fromDate,
+                    toDate
+                );
+
+                dgvSinhVien.DataSource = null;
+                dgvSinhVien.DataSource = ketQua;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    ex.Message,
+                    "Thông báo",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information
+                );
+
+                dgvSinhVien.DataSource = dsGoc;
+            }
+        }
+
+
+        private void btnSapXep_Click(object sender, EventArgs e)
+        {
+            string sort = cboSapXep.Text;
+            List<SinhVien> ds;
+
+            if (sort == "Họ tên")
+                ds = dsGoc.OrderBy(sv => sv.HoTen).ToList();
+            else if (sort == "Ngày sinh")
+                ds = dsGoc.OrderBy(sv => sv.NgaySinh).ToList();
+            else if (sort == "Ngày nhập học")
+                ds = dsGoc.OrderByDescending(sv => sv.NgayNhapHoc).ToList();
+            else
+                ds = dsGoc;
+
+            dgvSinhVien.DataSource = ds;
+        }
+
+
+    }
 
 }
